@@ -1,0 +1,39 @@
+name:                ord-ranges
+version:             0.1.0.0
+github:              "ivanbakel/ord-ranges"
+license:             GPL-3
+author:              "Isaac van Bakel"
+maintainer:          "ivb@vanbakel.io"
+copyright:           "2019 Isaac van Bakel"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+synopsis:            Range algebra, with nothing but Ord
+category:            Algebra
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/ivanbakel/ord-ranges#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  default-extensions:
+  - PatternSynonyms
+
+tests:
+  ord-ranges-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - ord-ranges
