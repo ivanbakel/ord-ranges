@@ -1,8 +1,27 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-|
+Module      : Data.Algebra.Ranges
+Description : Algebra of sets
+Copyright   : (c) Isaac van Bakel, 2019
+License     : GPL-3
+Maintainer  : ivb@vanbakel.io
+Stability   : experimental
+
+The algebra on ranges. This provides an 'Algebra' instance for any 'Foldable',
+'MonadPlus' collection of 'R.Interval's - so it should in particular work with
+lists and sets, which are the expected ways to use this algbera.
+
+The internal calculations are written to not perform any prettifying steps, so
+several successive operations may produce highly ugly and unusual intervals
+such as @[3, -7)@ - if you want a representation of only non-empty, non-redundant
+intervals, use 'simplify'.
+|-}
 module Data.Algebra.Ranges
   ( {- instance -}
     simplify
+  , Data.Algebra.Ranges.union
   , invert
+  , contains
   ) where
 
 import qualified Data.Ranges as R
@@ -36,6 +55,14 @@ instance (Foldable t, MonadPlus t, Ord a) => Algebra (t (R.Interval a)) where
   bar val
     = foldr intersection unit (invert <$> val)
 
+-- | Take the union of two intervals, whether they are contiguous or not. Unlike
+-- 'R.contiguousUnion', this is a total function.
+union :: (MonadPlus t, Ord a) => R.Interval a -> R.Interval a -> t (R.Interval a)
+union left right
+  = if R.contiguous left right
+      then pure (R.contiguousUnion left right)
+      else pure left `mplus` pure right
+
 -- | Invert an interval, producing zero or more intervals.
 invert :: (MonadPlus t) => R.Interval a -> t (R.Interval a)
 invert R.Everything = mzero
@@ -62,3 +89,7 @@ simplify =
     mzero
   -- Eliminate empty ranges
   . mfilter (not . R.isEmpty)
+
+-- | Does the element of the algebra of 'R.Interval's contain the given element?
+contains :: (Ord a, Foldable t) => a -> t (R.Interval a) -> Bool
+contains a values = any (R.contains a) values

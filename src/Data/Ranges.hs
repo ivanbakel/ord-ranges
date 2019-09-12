@@ -1,3 +1,17 @@
+{-|
+Module      : Data.Ranges
+Description : Ranges using nothing but 'Ord'
+Copyright   : (c) Isaac van Bakel, 2019
+License     : GPL-3
+Maintainer  : ivb@vanbakel.io
+Stability   : experimental
+
+The goal of this package is to provide a range algebra API that allows for
+range calculation over any type with just an 'Ord' implementation, unlike
+some packages which ask for 'Enum' or other numeric types.
+
+This module provides the basic 'Interval' interface.
+|-}
 module Data.Ranges
   ( Interval
   , single
@@ -21,16 +35,11 @@ module Data.Ranges
   , overlap
   , contiguous
   , isEmpty
+  , contains
 
   , intersection
   , contiguousUnion
   ) where
-
--- ! @ord-ranges@ - range algebra using nothing but 'Ord'
---
--- The goal of this package is to provide a range algebra API that allows for
--- range calculation over any type with just an 'Ord' implementation, unlike
--- some packages which ask for 'Enum' or other numeric types.
 
 data Bound a
   = Inclusive a
@@ -68,7 +77,7 @@ instance (Ord a) => Ord (Upper a) where
   (Upper (Exclusive a)) <= (Upper (Inclusive b)) = a <= b
   (Upper (Exclusive a)) <= (Upper (Exclusive b)) = a <= b
 
--- An interval, possibly bounded or unbounded inclusively or exclusively on
+-- | An interval, possibly bounded or unbounded inclusively or exclusively on
 -- either end. This is the basic type of the range algebra.
 --
 -- NB: There is no invariant that an 'Interval' is non-empty by construction,
@@ -101,50 +110,67 @@ instance (Show a) => Show (Interval a) where
 
       infinity = "inf"
 
+-- | The interval with no bounds on either end
 pattern Everything :: Interval a
 pattern Everything = Interval (Lower None) (Upper None)
 
+-- | The interval of a single element
 single :: a -> Interval a
 single val = Closed val val
 
+-- | The interval which is inclusive on both bounds
 pattern Closed :: a -> a -> Interval a
 pattern Closed lower upper
   = Interval (Lower (Inclusive lower)) (Upper (Inclusive upper))
 
+-- | The interval which is exclusive on both bounds
 pattern Open :: a -> a -> Interval a
 pattern Open lower upper
   = Interval (Lower (Exclusive lower)) (Upper (Exclusive upper))
 
+-- | The interval which is closed below, open above
 pattern ClosedOpen :: a -> a -> Interval a
 pattern ClosedOpen lower upper
   = Interval (Lower (Inclusive lower)) (Upper (Exclusive upper))
 
+-- | The interval which is open below, closed above
 pattern OpenClosed :: a -> a -> Interval a
 pattern OpenClosed lower upper
   = Interval (Lower (Exclusive lower)) (Upper (Inclusive upper))
 
+-- | The interval which is open above, unbounded below
 pattern ToOpen :: a -> Interval a
 pattern ToOpen upper
   = Interval (Lower None) (Upper (Exclusive upper))
 
+-- | The interval which is closed above, unbounded below
 pattern ToClosed :: a -> Interval a
 pattern ToClosed upper
   = Interval (Lower None) (Upper (Inclusive upper))
 
+-- | The interval which is open below, unbounded above
 pattern FromOpen :: a -> Interval a
 pattern FromOpen lower 
   = Interval (Lower (Exclusive lower)) (Upper None)
 
+-- | The interval which is closed below, unbounded above
 pattern FromClosed :: a -> Interval a
 pattern FromClosed lower
   = Interval (Lower (Inclusive lower)) (Upper None)
 
+-- | Is the first interval a subset of the second?
 containedIn :: (Ord a) => Interval a -> Interval a -> Bool
 containedIn i1 i2 = (intersection i1 i2) == i1
 
+-- | Do the two intervals share any points i.e. is their intersection non-empty?
 overlap :: (Ord a) => Interval a -> Interval a -> Bool
 overlap i1 i2 = not (isEmpty (intersection i1 i2))
 
+-- | Do the two intervals together describe a single interval?
+--
+-- NB: This is not the same as 'overlap' - two intervals which overlap are
+-- contiguous, but intervals can also be contiguous with compatible bounds
+-- e.g. [0, 1], (1, 2] are contiguous, since they are equivalent to [0, 2]
 contiguous :: (Ord a) => Interval a -> Interval a -> Bool
 contiguous i1@(Interval (Lower l1) (Upper u1)) i2@(Interval (Lower l2) (Upper u2))
   = overlap i1 i2 || touch l1 u2 || touch l2 u1
@@ -164,6 +190,12 @@ intersection :: (Ord a) => Interval a -> Interval a -> Interval a
 intersection (Interval l1 u1) (Interval l2 u2)
   = Interval (max l1 l2) (min u1 u2)
 
+-- | Do the interval bounds admit any elements?
+--
+-- NB: This does not guarantee that by the behaviour of the type on which the
+-- interval is constructed, there is a value of that type that can lie inside
+-- the interval e.g. 'FromOpen maxBound' will be empty, but 'isEmpty' will
+-- return 'False'
 isEmpty :: (Ord b) => Interval b -> Bool
 isEmpty (Interval (Lower None) _) = False
 isEmpty (Interval _ (Upper None)) = False
@@ -171,3 +203,7 @@ isEmpty (Closed l u) = u < l
 isEmpty (ClosedOpen l u) = u <= l
 isEmpty (OpenClosed l u) = u <= l
 isEmpty (Open l u) = u <= l
+
+-- | Does the interval contain the given element?
+contains :: (Ord a) => a -> Interval a -> Bool
+contains a interval = single a `containedIn` interval

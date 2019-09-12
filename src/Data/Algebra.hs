@@ -1,11 +1,23 @@
+{-|
+Module      : Data.Algebra
+Description : Algebra of sets
+Copyright   : (c) Isaac van Bakel, 2019
+License     : GPL-3
+Maintainer  : ivb@vanbakel.io
+Stability   : experimental
+
+This module describes as a class 'Algebra' the algebra of sets, which is the
+algebraic structure used for doing range operations.
+|-}
 module Data.Algebra
   ( Algebra (..)
   ) where
 
--- | An algebra in the sense of set algebras. Not an algebra in the vector space
--- sense, and not related to numerical algebra - though one of the predecessor
--- structures of this 'Algebra' is called a "ring", but is not a numerical ring,
--- but instead a ring of sets.
+-- | An algebra in the sense of set algebras.
+--
+-- Not an algebra in the vector space sense, and not related to numerical algebra
+-- - though one of the predecessor structures of this 'Algebra' is called a
+-- "ring", but is not a numerical ring, but instead a ring of sets.
 class Algebra a where
   {-# MINIMAL unit, containedIn, (union|intersection), (difference|symmetricDifference|bar) #-}
 
@@ -17,7 +29,6 @@ class Algebra a where
   -- and is the identity for intersection
   -- prop> union `intersection` a == a
   unit :: a
-  unit = bar empty
 
   -- | The empty is the element of the algebra which is contained in all other
   -- elements
