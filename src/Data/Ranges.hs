@@ -190,7 +190,7 @@ intersection :: (Ord a) => Interval a -> Interval a -> Interval a
 intersection (Interval l1 u1) (Interval l2 u2)
   = Interval (max l1 l2) (min u1 u2)
 
--- | Do the interval bounds admit any elements?
+-- | Do the interval bounds admit no elements?
 --
 -- NB: This does not guarantee that by the behaviour of the type on which the
 -- interval is constructed, there is a value of that type that can lie inside
