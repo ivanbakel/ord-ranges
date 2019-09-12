@@ -11,7 +11,7 @@ range calculation over any type with just an 'Ord' implementation, unlike
 some packages which ask for 'Enum' or other numeric types.
 
 This module provides the basic 'Interval' interface.
-|-}
+-}
 module Data.Ranges
   ( Interval
   , single
@@ -194,7 +194,7 @@ intersection (Interval l1 u1) (Interval l2 u2)
 --
 -- NB: This does not guarantee that by the behaviour of the type on which the
 -- interval is constructed, there is a value of that type that can lie inside
--- the interval e.g. 'FromOpen maxBound' will be empty, but 'isEmpty' will
+-- the interval e.g. @FromOpen maxBound@ will be empty, but 'isEmpty' will
 -- return 'False'
 isEmpty :: (Ord b) => Interval b -> Bool
 isEmpty (Interval (Lower None) _) = False

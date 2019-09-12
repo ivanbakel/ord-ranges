@@ -15,7 +15,7 @@ The internal calculations are written to not perform any prettifying steps, so
 several successive operations may produce highly ugly and unusual intervals
 such as @[3, -7)@ - if you want a representation of only non-empty, non-redundant
 intervals, use 'simplify'.
-|-}
+-}
 module Data.Algebra.Ranges
   ( {- instance -}
     simplify

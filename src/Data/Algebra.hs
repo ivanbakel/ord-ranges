@@ -8,7 +8,7 @@ Stability   : experimental
 
 This module describes as a class 'Algebra' the algebra of sets, which is the
 algebraic structure used for doing range operations.
-|-}
+-}
 module Data.Algebra
   ( Algebra (..)
   ) where
@@ -22,24 +22,33 @@ class Algebra a where
   {-# MINIMAL unit, containedIn, (union|intersection), (difference|symmetricDifference|bar) #-}
 
   -- | The unit is the element of the algebra which contains all other elements
+  --
   -- prop> a `containedIn` unit
   --
   -- Additionally, it absorbs by union
+  --
   -- prop> unit `union` a == unit
+  --
   -- and is the identity for intersection
+  --
   -- prop> union `intersection` a == a
   unit :: a
 
   -- | The empty is the element of the algebra which is contained in all other
   -- elements
+  --
   -- prop> empty `containedIn` a
   --
   -- It is the identity for union
+  --
   -- prop> empty `union` a == a
+  --
   -- and absorbs by intersection
+  --
   -- prop> empty `intersection` a == empty
   --
   -- By definition, it is the exclusion of the unit
+  --
   -- prop> bar unit == empty
   empty :: a
   empty = bar unit
@@ -47,19 +56,25 @@ class Algebra a where
   -- | The sub-element predicate.
   --
   -- This is reflexive
+  --
   -- prop> a `containedIn` a
+  --
   -- Transitive
+  --
   -- prop> a `containedIn` b && b `containedIn` c => a `containedIn` c
+  --
   -- But not (in general) symmetric
   containedIn :: a -> a -> Bool
 
   -- | The element of the algebra containing both arguments
+  --
   -- prop> (a `containedIn` b || a `containedIn` c) => a `containedIn` (b `union` c)
   union :: a -> a -> a
   union left right
     = bar (intersection (bar left) (bar right))
 
   -- | The element of the algebra contained in both arguments
+  --
   -- prop> a `containedIn` (b `intersection` c) <==> (a `containedIn` b && a `containedIn` c)
   intersection :: a -> a -> a
   intersection left right
@@ -67,6 +82,7 @@ class Algebra a where
 
   -- | The complementary element of the algebra - equivalent to the difference
   -- between 'unit' and the element. In particular,
+  --
   -- prop> a `union` bar a == unit
   -- prop> a `intersection` bar a == empty
   bar :: a -> a
@@ -74,6 +90,7 @@ class Algebra a where
 
   -- | The element of the algebra which is contained in the left element but is
   -- nowhere in the right element
+  --
   -- prop> (a `difference` b) `containedIn` a
   -- prop> (a `difference` b) `intersection` b == empty
   difference :: a -> a -> a
@@ -82,6 +99,7 @@ class Algebra a where
 
   -- | The symmetric difference - the element of the algebra which is contained
   -- in the union, but nowhere in the intersection, of the two elements
+  --
   -- prop> (a `symmetricDifference` b) `containedIn` (a `union` b)
   -- prop> (a `symmetricDifference` b) `intersection` (a `intersection` b) == empty
   symmetricDifference :: a -> a -> a
